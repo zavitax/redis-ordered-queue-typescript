@@ -1,0 +1,22 @@
+{
+  "name": "redis-ordered-queue",
+  "version": "0.1.0",
+  "description": "Priority queue with message-group based partitioning and equal attention guarantee for each message group based on Redis",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "eventemitter3": "^4.0.7",
+    "ioredis": "^5.0.4"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^17.0.30",
+    "typescript": "^4.6.4"
+  }
+}
