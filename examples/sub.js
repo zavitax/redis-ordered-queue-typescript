@@ -1,5 +1,4 @@
-const { RedisQueueClient } = require('../dist');
-const Redis = require('ioredis');
+const { RedisQueueClient, Redis } = require('../dist');
 
 const logger = console;
 
