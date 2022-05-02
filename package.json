@@ -1,6 +1,6 @@
 {
   "name": "redis-ordered-queue",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Priority queue with message-group based partitioning and equal attention guarantee for each message group based on Redis",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
