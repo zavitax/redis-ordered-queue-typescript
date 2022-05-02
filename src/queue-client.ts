@@ -65,10 +65,10 @@ export class RedisQueueClient {
     const latencyMs = Math.max(0, now - wireMessage.t);
 
     this.statLastMessageLatencies.push(latencyMs);
-    while (this.statLastMessageLatencies.length > 100) { this.statLastMessageLatencies.unshift(); }
+    while (this.statLastMessageLatencies.length > 100) { this.statLastMessageLatencies.shift(); }
 
     this.statLastMessageReceiveTimestamps.push(now);
-    while (this.statLastMessageReceiveTimestamps.length > 100) { this.statLastMessageReceiveTimestamps.unshift(); }
+    while (this.statLastMessageReceiveTimestamps.length > 100) { this.statLastMessageReceiveTimestamps.shift(); }
   }
 
   constructor ({
