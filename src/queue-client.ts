@@ -154,7 +154,7 @@ export class RedisQueueClient {
     };
   }
 
-  async startConsumers (handleMessage: HandleMessageCall, handleInvalidMessage?: HandleMessageCall): Promise<void> {
+  async startConsumers ({ handleMessage, handleInvalidMessage }: { handleMessage: HandleMessageCall, handleInvalidMessage?: HandleMessageCall }): Promise<void> {
     if (this.isRunning) throw new Error('Queue consumer is already running');
 
     this.isRunning = true;

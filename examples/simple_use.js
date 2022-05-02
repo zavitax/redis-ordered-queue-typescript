@@ -15,11 +15,13 @@ async function main() {
 
   async function handleMessage({ data, context: { lock: { groupId } } }) {
     console.log('Received message from group ', groupId, ': ', data);
-
-    return Promise.resolve();
   }
 
-  await client.startConsumers(handleMessage);
+  async function handleInvalidMessage({ data, context: { lock: { groupId }} }) {
+    console.log('Invalid messsage: ', groupId, ': ', data);
+  }
+
+  await client.startConsumers({ handleMessage, handleInvalidMessage });
 
   await client.send({
     data: { my: "message 1" },
