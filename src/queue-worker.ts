@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
 import Redis from 'ioredis';
-import { RedisScriptCall, clone_redis_connection, create_client_id } from './redis-utils';
+import { RedisScriptCall, clone_redis_connection, create_client_id, redis_call } from './redis-utils';
 
 export type HandleConsumedMessageCall = (messageData: any, lock: LockHandle) => Promise<void>;
 
@@ -176,7 +176,7 @@ constructor ({
       return claimed;
     }
 
-    const response = await this.redis.xreadgroup(
+    const response = await redis_call(this.redis, 'XREADGROUP',
       'GROUP', this.consumerGroupId, this.consumerId,
       'COUNT', 1,
       'BLOCK', this.pollingTimeoutMs,
@@ -226,7 +226,7 @@ constructor ({
   }
 
   private async _peek (lock: LockHandle): Promise<string | null> {
-    const [ msgData ] = await this.redis.zrange(lock.queueId, 0, 0) as [ string ];
+    const [ msgData ] = await redis_call(this.redis, 'ZRANGE', lock.queueId, 0, 0) as [ string ];
 
     return msgData;
   }

@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { RedisScriptCall, prepare_redis_script, create_client_id } from './redis-utils';
+import { RedisScriptCall, prepare_redis_script, create_client_id, redis_call, clone_redis_connection } from './redis-utils';
 import { RedisQueueWorker, LockHandle } from './queue-worker';
 import * as scripts from './lua-scripts';
 
@@ -106,7 +106,7 @@ export class RedisQueueClient {
 
     // Ensure consumer groupId exists on the processing groupId stream
     try {
-      await this.redis.xgroup('CREATE', this.groupStreamKey, this.consumerGroupId, 0, 'MKSTREAM');
+      await redis_call(this.redis, 'XGROUP', 'CREATE', this.groupStreamKey, this.consumerGroupId, 0, 'MKSTREAM');
 
       this._ensured_stream_group = true;
     } catch {
@@ -115,7 +115,7 @@ export class RedisQueueClient {
 
   async getMetrics ({ topMessageGroupsLimit = 10 }): Promise<any> {
     if (!this.callGetMetrics) {
-      this.callGetMetrics = await prepare_redis_script(this.redis, scripts.GetMetrics);
+      this.callGetMetrics = await prepare_redis_script(this.redis, scripts.GetMetrics, 'GetMetrics');
     }
 
     // Ensure consumer groupId exists on the processing groupId stream
@@ -161,9 +161,9 @@ export class RedisQueueClient {
 
     this.isRunning = true;
 
-    const callClaimTimedOutGroup = await prepare_redis_script(this.redis, scripts.ClaimTimedOutGroup);
-    const callUnlockGroup = await prepare_redis_script(this.redis, scripts.UnlockGroup);
-    const callDeleteMessage = await prepare_redis_script(this.redis, scripts.DeleteMessage);
+    const callClaimTimedOutGroup = await prepare_redis_script(this.redis, scripts.ClaimTimedOutGroup, 'ClaimTimedOutGroup');
+    const callUnlockGroup = await prepare_redis_script(this.redis, scripts.UnlockGroup, 'UnlockGroup');
+    const callDeleteMessage = await prepare_redis_script(this.redis, scripts.DeleteMessage, 'DeleteMessage');
 
     // Ensure consumer groupId exists on the processing groupId stream
     await this._ensureStreamGroup();
@@ -243,7 +243,7 @@ export class RedisQueueClient {
 
   async send({ data, priority = 1, groupId }: { data: any, priority: number, groupId: string }): Promise<number> {
     if (!this.callAddGroupAndMessageToQueue) {
-      this.callAddGroupAndMessageToQueue = await prepare_redis_script(this.redis, scripts.AddGroupAndMessageToQueue);
+      this.callAddGroupAndMessageToQueue = await prepare_redis_script(this.redis, scripts.AddGroupAndMessageToQueue, 'AddGroupAndMessageToQueue');
     }
 
     // Ensure consumer groupId exists on the processing groupId stream

@@ -1,8 +1,19 @@
 const { RedisQueueClient } = require('../dist');
 const Redis = require('ioredis');
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function main() {
-  const redis = new Redis({ host: 'localhost', port: 6379 });
+  const redis = new Redis({
+    host: 'localhost',
+    port: 6379,
+    lazyConnect: true,
+    showFriendlyErrorStack: true,
+  });
+  
+  await redis.connect();
 
   const client = new RedisQueueClient({
     redis: redis,
@@ -10,7 +21,7 @@ async function main() {
     groupVisibilityTimeoutMs: 60000,
     pollingTimeoutMs: 10000,
     consumerCount: 1,
-    redisKeyPrefix: 'redis-ordered-queue'
+    redisKeyPrefix: `redis-ordered-queue`
   });
 
   async function handleMessage({ data, context: { lock: { groupId } } }) {
@@ -43,9 +54,11 @@ async function main() {
 
   console.log('metrics: ', await client.getMetrics(10));
 
+  await sleep(5000);
+
   console.log('Shutting down...');
   await client.stopConsumers();
-
+  
   await redis.disconnect(false);
 }
 

@@ -67,30 +67,33 @@ const ClaimTimedOutGroup = `
   -- Timeout milliseconds
   local timeoutMs = tonumber(ARGV[3]);
 
-  local pending_msgs = redis.call('XPENDING', groupStreamKey, consumerGroupId, 'IDLE', timeoutMs, '-', '+', '1');
+  local pending_msgs = redis.call('XPENDING', groupStreamKey, consumerGroupId, '-', '+', '1');
 
   if (#(pending_msgs) > 0) then
     -- Claim message by Id for this consumer
     local pending_msg_id = pending_msgs[1][1];
     local pending_msg_consumer_id = pending_msgs[1][2];
+    local pending_msg_idle_ms = tonumber(pending_msgs[1][3]);
 
-    local claimed_msgs = redis.call('XCLAIM', groupStreamKey, consumerGroupId, consumerId, 0, pending_msg_id);
+    if (pending_msg_idle_ms >= timeoutMs) then
+      local claimed_msgs = redis.call('XCLAIM', groupStreamKey, consumerGroupId, consumerId, 0, pending_msg_id);
 
-    if (#(claimed_msgs) > 0) then
-      local msg_id = claimed_msgs[1][1];
-      local msg_content = claimed_msgs[1][2];
+      if (#(claimed_msgs) > 0) then
+        local msg_id = claimed_msgs[1][1];
+        local msg_content = claimed_msgs[1][2];
 
-      -- Check remaining pending msgs for this consumer, if no more msgs are pending, we can delete the consumer
-      local pending_msgs_same_consumer = redis.call('XPENDING', groupStreamKey, consumerGroupId, 'IDLE', timeoutMs, '-', '+', '1', pending_msg_consumer_id);
+        -- Check remaining pending msgs for this consumer, if no more msgs are pending, we can delete the consumer
+        local pending_msgs_same_consumer = redis.call('XPENDING', groupStreamKey, consumerGroupId, 'IDLE', timeoutMs, '-', '+', '1', pending_msg_consumer_id);
 
-      if (#(pending_msgs_same_consumer) == 0) then
-        -- Delete consumer which has timed out
-        redis.call('XGROUP', 'DELCONSUMER', groupStreamKey, consumerGroupId, pending_msg_consumer_id)
+        if (#(pending_msgs_same_consumer) == 0) then
+          -- Delete consumer which has timed out
+          redis.call('XGROUP', 'DELCONSUMER', groupStreamKey, consumerGroupId, pending_msg_consumer_id)
+        end
+
+        local group_id = msg_content[2];
+
+        return { msg_id, group_id };
       end
-
-      local group_id = msg_content[2];
-
-      return { msg_id, group_id };
     end
   end
 
@@ -151,7 +154,7 @@ const GetMetrics = `
       sum=sum+z[i]
   end
 
-  local topGroups = redis.call('ZRANGE', groupSetKey, 0, topMessageGroupsLimit, 'REV', 'WITHSCORES')
+  local topGroups = redis.call('ZREVRANGE', groupSetKey, 0, topMessageGroupsLimit, 'WITHSCORES')
 
   local consumers = redis.call('XINFO', 'CONSUMERS', groupStreamKey, consumerGroupId)
 
