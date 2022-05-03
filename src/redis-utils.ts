@@ -13,7 +13,7 @@ export async function prepare_redis_script(redis: Redis, script: string): Promis
 
 export async function clone_redis_connection(redis: Redis): Promise<Redis> {
   return await new Promise<Redis>((resolve, reject) => {
-    const copy: Redis = new Redis(redis.options);
+    const copy: Redis = new Redis({ ...redis.options, lazyConnect: false });
 
     copy.once('connect', () => { resolve(copy); });
     copy.once('error', (err) => { reject(err); });
