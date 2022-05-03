@@ -24,7 +24,7 @@ export interface HandleMessageCallArguments {
 export type HandleMessageCall = ({ data, context: { lock } }: HandleMessageCallArguments) => Promise<void>;
 
 export interface ConstructorArgs {
-  redis: Redis;
+  redis: Redis.Redis;
   batchSize: number;
   groupVisibilityTimeoutMs: number;
   pollingTimeoutMs: number;
@@ -33,7 +33,7 @@ export interface ConstructorArgs {
 };
 
 export class RedisQueueClient {
-  private redis: Redis;
+  private redis: Redis.Redis;
   private batchSize: number;
   private groupVisibilityTimeoutMs: number;
   private pollingTimeoutMs: number;
@@ -100,11 +100,11 @@ export class RedisQueueClient {
   private async _ensureStreamGroup (): Promise<void> {
     if (this._ensured_stream_group) return;
 
-    this.clientId = await this.redis.call('CLIENT', [ 'ID' ]) as number;
+    this.clientId = await this.redis.client('ID') as number;
 
     // Ensure consumer groupId exists on the processing groupId stream
     try {
-      await this.redis.call('XGROUP', [ 'CREATE', this.groupStreamKey, this.consumerGroupId, 0, 'MKSTREAM' ]);
+      await this.redis.xgroup('CREATE', this.groupStreamKey, this.consumerGroupId, 0, 'MKSTREAM');
 
       this._ensured_stream_group = true;
     } catch {

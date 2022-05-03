@@ -12,7 +12,7 @@ export interface LockHandle {
 };
 
 export interface ConstructorArgs {
-  redis: Redis;
+  redis: Redis.Redis;
   batchSize: number;
   groupVisibilityTimeoutMs: number;
   pollingTimeoutMs: number;
@@ -36,8 +36,8 @@ export interface Events {
 };
 
 export class RedisQueueWorker extends EventEmitter<Events> {
-  private parentRedis: Redis;
-  private redis: Redis;
+  private parentRedis: Redis.Redis;
+  private redis: Redis.Redis;
   private batchSize: number;
   private groupVisibilityTimeoutMs: number;
   private pollingTimeoutMs: number;
@@ -106,7 +106,7 @@ constructor ({
 
     this.redis = await clone_redis_connection(this.parentRedis);
 
-    const redisClientId: string = await this.redis.call('CLIENT', [ 'ID' ]) as string;
+    const redisClientId: string = await this.redis.client('ID') as string;
     this.consumerId = `consumer-${redisClientId}`;
 
     this._poll();
@@ -170,11 +170,11 @@ constructor ({
       return claimed;
     }
 
-    const response = await this.redis.call('XREADGROUP', [
+    const response = await this.redis.xreadgroup(
       'GROUP', this.consumerGroupId, this.consumerId,
       'COUNT', 1,
       'BLOCK', this.pollingTimeoutMs,
-      'STREAMS', this.groupStreamKey, '>']);
+      'STREAMS', this.groupStreamKey, '>');
 
     if (!response) {
       return null;
@@ -220,7 +220,7 @@ constructor ({
   }
 
   private async _peek (lock: LockHandle): Promise<string | null> {
-    const [ msgData ] = await this.redis.call('ZRANGE', [ lock.queueId, 0, 0 ]) as [ string ];
+    const [ msgData ] = await this.redis.zrange(lock.queueId, 0, 0) as [ string ];
 
     return msgData;
   }

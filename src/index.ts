@@ -1,4 +1,4 @@
 import { RedisQueueClient } from './queue-client';
-import Redis, { RedisOptions, CommonRedisOptions } from 'ioredis';
+import Redis from 'ioredis';
 
-export { RedisQueueClient, Redis, RedisOptions, CommonRedisOptions };
+export { RedisQueueClient, Redis };
