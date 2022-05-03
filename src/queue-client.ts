@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { RedisScriptCall, prepare_redis_script } from './redis-utils';
+import { RedisScriptCall, prepare_redis_script, create_client_id } from './redis-utils';
 import { RedisQueueWorker, LockHandle } from './queue-worker';
 import * as scripts from './lua-scripts';
 
@@ -41,6 +41,7 @@ export class RedisQueueClient {
 
   private groupStreamKey: string;
   private groupSetKey: string;
+  private clientIndexKey: string;
   private consumerGroupId: string;
   private messagePriorityQueueKeyPrefix: string;
 
@@ -87,6 +88,7 @@ export class RedisQueueClient {
 
     this.groupStreamKey = `${redisKeyPrefix}::msg-group-stream`;
     this.groupSetKey = `${redisKeyPrefix}::msg-group-set`;
+    this.clientIndexKey = `${redisKeyPrefix}::consumer-index-sequence`;
     this.consumerGroupId = `${redisKeyPrefix}::consumer-group`;
     this.messagePriorityQueueKeyPrefix = `${redisKeyPrefix}::msg-group-queue::`;
 
@@ -100,7 +102,7 @@ export class RedisQueueClient {
   private async _ensureStreamGroup (): Promise<void> {
     if (this._ensured_stream_group) return;
 
-    this.clientId = await this.redis.client('ID') as number;
+    this.clientId = await create_client_id(this.redis, this.clientIndexKey);
 
     // Ensure consumer groupId exists on the processing groupId stream
     try {
@@ -212,6 +214,7 @@ export class RedisQueueClient {
         // Redis keys
         groupStreamKey: this.groupStreamKey,
         groupSetKey: this.groupSetKey,
+        clientIndexKey: this.clientIndexKey,
         consumerGroupId: this.consumerGroupId,
 
         // Redis script EVALSHA hashes

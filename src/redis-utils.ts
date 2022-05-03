@@ -19,3 +19,11 @@ export async function clone_redis_connection(redis: Redis.Redis): Promise<Redis.
     copy.once('error', (err: any) => { reject(err); });
   });
 }
+
+export async function create_client_id(redis: Redis.Redis, clientIndexKey: string): Promise<number> {
+  try {
+    return await redis.client('ID') as number;
+  } catch {
+    return await redis.incr(clientIndexKey);
+  }
+}

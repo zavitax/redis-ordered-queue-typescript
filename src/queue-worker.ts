@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
 import Redis from 'ioredis';
-import { RedisScriptCall, clone_redis_connection } from './redis-utils';
+import { RedisScriptCall, clone_redis_connection, create_client_id } from './redis-utils';
 
 export type HandleConsumedMessageCall = (messageData: any, lock: LockHandle) => Promise<void>;
 
@@ -21,6 +21,8 @@ export interface ConstructorArgs {
   // Redis keys
   groupStreamKey: string;
   groupSetKey: string;
+  clientIndexKey: string;
+
   consumerGroupId: string;
 
   // Redis script EVALSHA hashes
@@ -46,6 +48,8 @@ export class RedisQueueWorker extends EventEmitter<Events> {
   // Redis keys
   private groupStreamKey: string;
   private groupSetKey: string;
+  private clientIndexKey: string;
+
   private consumerGroupId: string;
 
   // Priority queues keys prefix
@@ -70,6 +74,7 @@ constructor ({
     // Redis keys
     groupStreamKey,
     groupSetKey,
+    clientIndexKey,
     consumerGroupId,
 
     // Redis script EVALSHA hashes
@@ -94,6 +99,7 @@ constructor ({
     
     this.groupStreamKey = groupStreamKey;
     this.groupSetKey = groupSetKey;
+    this.clientIndexKey = clientIndexKey;
     this.consumerGroupId = consumerGroupId;
 
     this._createPriorityMessageQueueKey = createPriorityMessageQueueKey;
@@ -106,7 +112,7 @@ constructor ({
 
     this.redis = await clone_redis_connection(this.parentRedis);
 
-    const redisClientId: string = await this.redis.client('ID') as string;
+    const redisClientId: number = await create_client_id(this.redis, this.clientIndexKey);
     this.consumerId = `consumer-${redisClientId}`;
 
     this._poll();
