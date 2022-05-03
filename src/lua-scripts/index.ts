@@ -83,7 +83,7 @@ const ClaimTimedOutGroup = `
         local msg_content = claimed_msgs[1][2];
 
         -- Check remaining pending msgs for this consumer, if no more msgs are pending, we can delete the consumer
-        local pending_msgs_same_consumer = redis.call('XPENDING', groupStreamKey, consumerGroupId, 'IDLE', timeoutMs, '-', '+', '1', pending_msg_consumer_id);
+        local pending_msgs_same_consumer = redis.call('XPENDING', groupStreamKey, consumerGroupId, '-', '+', '1', pending_msg_consumer_id);
 
         if (#(pending_msgs_same_consumer) == 0) then
           -- Delete consumer which has timed out
