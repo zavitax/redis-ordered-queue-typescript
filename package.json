@@ -1,7 +1,25 @@
 {
   "name": "redis-ordered-queue",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Priority queue with message-group based partitioning and equal attention guarantee for each message group based on Redis",
+  "author": {
+    "name": "Ilya Melamed",
+    "email": "ilya77@gmail.com",
+    "url": "https://www.github.com/zavitax"
+  },
+  "keywords": [
+    "queue",
+    "priority",
+    "priority queue",
+    "ordered queue",
+    "ordered message queue",
+    "redis",
+    "order"
+  ],
+  "homepage": "https://github.com/zavitax/redis-ordered-queue-typescript",
+  "bugs": {
+    "url": "https://github.com/zavitax/redis-ordered-queue-typescript/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
