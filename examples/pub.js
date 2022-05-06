@@ -21,11 +21,6 @@ function data(groupId) {
 }
 
 async function main () {
-  //await redis.call('FLUSHDB');
-
-  //console.log(await redis.call('ZINCRBY', 'a', 1, 'a'));
-  //process.exit(0);
-
   const client = new RedisQueueClient({ redis, batchSize: 1, messageGroupLockTimeoutSeconds: 60 });
 
   const groups = [ ];
@@ -40,7 +35,6 @@ async function main () {
 
     const messagePriority = Math.round(10 * Math.random());
 
-    //console.log(`SendMessage: ${groupIndex}: ${groupId}`);
     await client.send({ data: data(groupId), priority: messagePriority, groupId: groupId });
 
     if (i % 1000 === 0) {

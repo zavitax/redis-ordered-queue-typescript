@@ -22,15 +22,26 @@ function sleep (ms = 1000) {
 }
 
 async function main () {
-  //await redis.call('FLUSHDB');
-
   const client = new RedisQueueClient({
     redis,
     batchSize: 1,
     messageGroupLockTimeoutSeconds: 5,
  });
 
-  while (true) {
+ require('readline').emitKeypressEvents(process.stdin);
+ process.stdin.setRawMode(true);
+
+ let isRunning = true;
+
+ process.stdin.on('keypress', (str, key) => {
+  if (key.ctrl && key.name === 'c') {
+    isRunning = false;
+
+    console.log('Shutting down...');
+  }
+ });
+
+ while (isRunning) {
     const metrics = await client.getMetrics({ topMessageGroupsLimit: 3 });
 
     console.log(`METRICS: `, metrics);
@@ -38,5 +49,7 @@ async function main () {
     await sleep(1000);
   }
 
-  redis.disconnect();
+  redis.disconnect(false);
+
+  process.exit(0);
 }

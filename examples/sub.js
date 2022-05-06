@@ -30,7 +30,7 @@ function aavg (arr) {
   return sum / arr.length;
 }
 
-async function handleMessage ({ data, context: { lock: { groupId, consumerId }, timestamp } }) {
+async function handleMessage ({ /*data,*/ context: { lock: { groupId, consumerId }, timestamp } }) {
   const delta = Date.now().valueOf() - timestamp;
 
   this.total = (this.total || 0) + 1;
@@ -53,7 +53,6 @@ async function handleMessage ({ data, context: { lock: { groupId, consumerId }, 
 
   if (this.total % 100 === 0) {
     console.log(`GOT MSGS: ${this.total}    min: ${Math.min(...ts)}    max: ${Math.max(...ts)}    avg: ${aavg(ts)}`);
-    //console.log(`GOT MSGS: ${this.total}`);
 
     this.ts = [];
   }

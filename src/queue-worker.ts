@@ -9,7 +9,7 @@ export interface LockHandle {
   messageId: string;
   queueId: string;
   consumerId: string;
-};
+}
 
 export interface ConstructorArgs {
   redis: Redis.Redis;
@@ -31,11 +31,11 @@ export interface ConstructorArgs {
   callDeleteMessage: RedisScriptCall;
 
   createPriorityMessageQueueKey: (groupId: string) => string;
-};
+}
 
 export interface Events {
   stopped (): void;
-};
+}
 
 export class RedisQueueWorker extends EventEmitter<Events> {
   private parentRedis: Redis.Redis;
@@ -194,7 +194,7 @@ constructor ({
       if (messages) {
         const [ msg ] = messages;
 
-        const [ msgId, [ _ /*msgContentKey*/, groupId ] ] = msg;
+        const [ msgId, [ _msgContentKey, groupId ] ] = msg;
 
         return { groupId, messageId: msgId, queueId: this._createPriorityMessageQueueKey(groupId), consumerId: this.consumerId };
       }
@@ -236,6 +236,6 @@ constructor ({
       [ lock.groupId, messageData ],
       [ this.groupSetKey, lock.queueId ]);
 
-    return messageQueueLength; //[ removedMsgsCount, messageQueueLength ];
+    return messageQueueLength;
   }
-};
+}

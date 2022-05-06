@@ -14,7 +14,7 @@ export async function prepare_redis_script(redis: Redis.Redis, script: string, l
       throw err;
     }
   }; 
-};
+}
 
 export async function clone_redis_connection(redis: Redis.Redis): Promise<Redis.Redis> {
   const copy: Redis.Redis = new Redis({
@@ -29,14 +29,8 @@ export async function clone_redis_connection(redis: Redis.Redis): Promise<Redis.
 
 export async function create_client_id(redis: Redis.Redis, clientIndexKey: string): Promise<number> {
   return await redis_call(redis, 'INCR', clientIndexKey) as number;
-/*  try {
-    return await redis_call(redis, 'CLIENT', 'ID') as number;
-  } catch {
-    return await redis_call(redis, 'INCR', clientIndexKey) as number;
-  }*/
 }
 
 export async function redis_call(redis: Redis.Redis, command: string, ...args: any[]): Promise<any> {
-  const result = await redis.send_command(command, ...args);
-  return result;
+  return await redis.send_command(command, ...args);
 }

@@ -183,7 +183,7 @@ export class RedisQueueClient {
         pollingTimeoutMs: this.pollingTimeoutMs,
 
         // Message handling callback
-        handleMessage: async (msgData: any, lock: LockHandle) => {
+        handleMessage: async (msgData: any, lock: LockHandle): Promise<void> => {
           let wireMessage: RedisQueueWireMessage | null = null;
 
           try {
@@ -193,7 +193,7 @@ export class RedisQueueClient {
           if (wireMessage && !!wireMessage.d && !!wireMessage.t && !!wireMessage.c && !!wireMessage.s) {
             this._handleMessageStats(wireMessage);
 
-            return await handleMessage({
+            await handleMessage({
               data: wireMessage.d,
               context: {
                 timestamp: wireMessage.t,
@@ -208,7 +208,7 @@ export class RedisQueueClient {
 
             // Bad message format
             if (handleInvalidMessage) {
-              return await handleInvalidMessage({
+              await handleInvalidMessage({
                 data: msgData,
                 context: { lock, timestamp: null, producer: null, sequence: null, latencyMs: null }
               });
