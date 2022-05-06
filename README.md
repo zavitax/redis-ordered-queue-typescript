@@ -48,7 +48,9 @@ The amount of consumers you can run on each worker node is limited only by the a
 
 ## Infrastructure
 
-The library leverages `ioredis` for communication with the Redis server. The expected version of `ioredis` API is 4.x.
+The library leverages `ioredis` for communication with the Redis server.
+
+The expected version of `ioredis` API is 4.x.
 
 ## Installation
 
