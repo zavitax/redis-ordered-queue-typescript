@@ -143,6 +143,12 @@ export class RedisQueueClient {
     }
     const avgLatency = this.statLastMessageLatencies.length > 0 ? sumLatency / this.statLastMessageLatencies.length : 0;
 
+    const topMessageGroups = transformList(response[4], 'group', 'backlog');
+    let topMessageGroupsMessageBacklogLength: number = 0;
+    for (const group of topMessageGroups) {
+      topMessageGroupsMessageBacklogLength += group.backlog;
+    }
+
     return {
       bufferedMessageGroups: response[0],
       trackedMessageGroups: response[1],
@@ -152,7 +158,8 @@ export class RedisQueueClient {
       minLatencyMs: this.statLastMessageLatencies.length ? Math.min(...this.statLastMessageLatencies) : 0,
       maxLatencyMs: this.statLastMessageLatencies.length ? Math.max(...this.statLastMessageLatencies) : 0,
       avgLatencyMs: Math.round(avgLatency),
-      topMessageGroups: transformList(response[4], 'group', 'backlog'),
+      topMessageGroups: topMessageGroups,
+      topMessageGroupsMessageBacklogLength: topMessageGroupsMessageBacklogLength,
     };
   }
 
