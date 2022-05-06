@@ -32,5 +32,5 @@ export async function create_client_id(redis: Redis.Redis, clientIndexKey: strin
 }
 
 export async function redis_call(redis: Redis.Redis, command: string, ...args: any[]): Promise<any> {
-  return await redis.send_command(command, ...args);
+  return redis.send_command(command, ...args);
 }

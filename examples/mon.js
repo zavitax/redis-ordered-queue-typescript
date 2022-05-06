@@ -33,21 +33,11 @@ async function main () {
 
  let isRunning = true;
 
- process.stdin.on('keypress', (str, key) => {
-  if (key.ctrl && key.name === 'c') {
-    isRunning = false;
+  const metrics = await client.getMetrics({ topMessageGroupsLimit: 3 });
 
-    console.log('Shutting down...');
-  }
- });
+  console.log(`METRICS: `, metrics);
 
- while (isRunning) {
-    const metrics = await client.getMetrics({ topMessageGroupsLimit: 3 });
-
-    console.log(`METRICS: `, metrics);
-
-    await sleep(1000);
-  }
+  await sleep(1000);
 
   redis.disconnect(false);
 
