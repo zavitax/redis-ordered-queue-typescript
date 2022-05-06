@@ -26,12 +26,10 @@ async function main () {
     redis,
     batchSize: 1,
     messageGroupLockTimeoutSeconds: 5,
- });
+  });
 
- require('readline').emitKeypressEvents(process.stdin);
- process.stdin.setRawMode(true);
-
- let isRunning = true;
+  require('readline').emitKeypressEvents(process.stdin);
+  process.stdin.setRawMode(true);
 
   const metrics = await client.getMetrics({ topMessageGroupsLimit: 3 });
 
