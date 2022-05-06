@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { RedisScriptCall, prepare_redis_script, create_client_id, redis_call, clone_redis_connection } from './redis-utils';
+import { RedisScriptCall, prepare_redis_script, create_client_id, redis_call } from './redis-utils';
 import { RedisQueueWorker, LockHandle } from './queue-worker';
 import * as scripts from './lua-scripts';
 
@@ -8,7 +8,7 @@ export interface RedisQueueWireMessage {
   c: number;
   s: number;
   d: any;
-};
+}
 
 export interface HandleMessageCallArguments {
   data: any,
@@ -19,7 +19,7 @@ export interface HandleMessageCallArguments {
     sequence: number | null,
     latencyMs: number | null
   }
-};
+}
 
 export type HandleMessageCall = ({ data, context: { lock } }: HandleMessageCallArguments) => Promise<void>;
 
@@ -30,7 +30,7 @@ export interface ConstructorArgs {
   pollingTimeoutMs: number;
   consumerCount: number;
   redisKeyPrefix: string;
-};
+}
 
 export class RedisQueueClient {
   private redis: Redis.Redis;
@@ -236,7 +236,7 @@ export class RedisQueueClient {
       this.consumers.push(consumer);
     }
   
-    this.consumers.map(consumer => consumer.start());
+    this.consumers.forEach(consumer => consumer.start());
   }
 
   async stopConsumers (): Promise<void> {
@@ -278,4 +278,4 @@ export class RedisQueueClient {
   private _createPriorityMessageQueueKey (groupId: string): string {
     return this.messagePriorityQueueKeyPrefix + groupId;
   }
-};
+}
