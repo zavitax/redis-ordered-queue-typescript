@@ -19,7 +19,7 @@ async function handleMessage () {
 }
 
 async function main () {
-  const client = new RedisQueueClient({ redis, batchSize: 10, consumerCount: 500, groupVisibilityTimeoutMs: 60000 * 5 });
+  const client = new RedisQueueClient({ redis, batchSize: 10, consumerCount: 10, groupVisibilityTimeoutMs: 60000 * 5 });
 
   client.startConsumers({ handleMessage });
 }
