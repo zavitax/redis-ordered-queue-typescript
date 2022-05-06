@@ -48,12 +48,18 @@ The amount of consumers you can run on each worker node is limited only by the a
 
 ## Infrastructure
 
-The library leverages `ioredis` for communication with the Redis server.
+The library leverages `ioredis` for communication with the Redis server. The expected version of `ioredis` API is 4.x.
+
+## Installation
+
+```sh
+npm i redis-ordered-queue
+```
 
 ## Usage
 
 ```typescript
-const { RedisQueueClient } = require('../dist');
+const { RedisQueueClient } = require('redis-ordered-queue');
 const Redis = require('ioredis');
 
 async function main() {
