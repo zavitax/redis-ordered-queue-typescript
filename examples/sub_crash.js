@@ -14,7 +14,7 @@ redis.on('error', error => logger.error(error, 'Redis error'));
 redis.on('close', () => logger.info('Redis server connection has closed.'));
 redis.on('end', () => logger.info('Failed to reconnect to redis'));
 
-async function handleMessage ({ data, context: { lock: { groupId, consumerId }, timestamp } }) {
+async function handleMessage ({}) {
   process.exit(0);
 }
 
