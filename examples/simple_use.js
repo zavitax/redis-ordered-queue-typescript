@@ -1,4 +1,4 @@
-const { RedisQueueClient } = require('../dist');
+const { RedisQueueClient } = require('redis-queue-client');
 const Redis = require('ioredis');
 
 function sleep(ms) {
