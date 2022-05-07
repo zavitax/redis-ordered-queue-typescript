@@ -7,20 +7,6 @@ const DeleteMessage = `
 
   local removedMsgsCount = redis.call('ZREM', messageQueueKey, messageData);
 
-  --[[
-    local len = redis.call('ZCARD', messageQueueKey);
-
-    if (removedMsgsCount > 0) then
-      if (len > 0) then
-        redis.call('ZINCRBY', groupSetKey, -1, groupId);
-      else
-        redis.call('ZREM', groupSetKey, groupId);
-      end
-    end
-
-    return { removedMsgsCount, len };
-  ]]--
-
   return { removedMsgsCount };
 `;
 
@@ -82,12 +68,15 @@ const ClaimTimedOutGroup = `
         local msg_id = claimed_msgs[1][1];
         local msg_content = claimed_msgs[1][2];
 
-        -- Check remaining pending msgs for this consumer, if no more msgs are pending, we can delete the consumer
-        local pending_msgs_same_consumer = redis.call('XPENDING', groupStreamKey, consumerGroupId, '-', '+', '1', pending_msg_consumer_id);
+        -- Check if we are snatching messages from a different consumer ID
+        if (consumerId ~= pending_msg_consumer_id) then
+          -- Check remaining pending msgs for this consumer, if no more msgs are pending, we can delete the consumer
+          local pending_msgs_same_consumer = redis.call('XPENDING', groupStreamKey, consumerGroupId, '-', '+', '1', pending_msg_consumer_id);
 
-        if (#(pending_msgs_same_consumer) == 0) then
-          -- Delete consumer which has timed out
-          redis.call('XGROUP', 'DELCONSUMER', groupStreamKey, consumerGroupId, pending_msg_consumer_id)
+          if (#(pending_msgs_same_consumer) == 0) then
+            -- Delete consumer which has timed out
+            redis.call('XGROUP', 'DELCONSUMER', groupStreamKey, consumerGroupId, pending_msg_consumer_id)
+          end
         end
 
         local group_id = msg_content[2];
@@ -116,14 +105,22 @@ const UnlockGroup = `
 
   redis.call('XACK', groupStreamKey, consumerGroupId, messageId);
   redis.call('XDEL', groupStreamKey, messageId);
-  redis.call('XGROUP', 'DELCONSUMER', groupStreamKey, consumerGroupId, consumerId);
 
+  -- Check remaining messages in group queue, if there are no more messages remainint we can delete group set key
   local numMsgs = tonumber(redis.call('ZCARD', priorityMessageQueueKey));
 
   if (numMsgs == 0) then
     -- No msgs, remove group set key
     redis.call('ZREM', groupSetKey, groupId);
 
+    -- Check remaining pending msgs for this consumer, if no more msgs are pending, we can delete the consumer
+    local pending_msgs_same_consumer = redis.call('XPENDING', groupStreamKey, consumerGroupId, '-', '+', '1', consumerId);
+  
+    if (#(pending_msgs_same_consumer) == 0) then
+      -- Delete consumer which has timed out
+      redis.call('XGROUP', 'DELCONSUMER', groupStreamKey, consumerGroupId, consumerId)
+    end
+  
     return { 1, numMsgs };
   else
     -- Has msgs, update group set score to reflect current number of messages
