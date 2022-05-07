@@ -1,6 +1,6 @@
 {
   "name": "redis-ordered-queue",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "Priority queue with message-group based partitioning and equal attention guarantee for each message group based on Redis",
   "author": {
     "name": "Ilya Melamed",
