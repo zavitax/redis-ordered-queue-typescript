@@ -1,7 +1,8 @@
 const { RedisQueueClient } = require('../dist');
+const { RedisQueueWorker } = require('../dist/queue-worker');
 const Redis = require('ioredis');
 
-function sleep (ms) {
+async function sleep (ms = 1000) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -66,7 +67,7 @@ describe('RedisQueueClient', () => {
     });
 
     it('should receive messages', async () => {
-      data = { key: 'value' };
+      const data = { key: 'value' };
 
       await expect(queue.startConsumers({ handleMessage: handleMessageSpy })).resolves.not.toThrowError();
       await queue.send({ data, priority: 1, groupId: 'test-group' });
@@ -75,6 +76,20 @@ describe('RedisQueueClient', () => {
 
       expect(startConsumersSpy).toHaveBeenCalledTimes(1);
       expect(handleMessageSpy).toHaveBeenCalled();
+    });
+
+    it('should stop messages messages after handleMessage error', async () => {
+      const failHandleMessageSpy = jest.fn(cb => () => { throw new Error("error"); });
+
+      const data = { key: 'value' };
+
+      await expect(queue.startConsumers({ handleMessage: failHandleMessageSpy })).resolves.not.toThrowError();
+      await queue.send({ data, priority: 1, groupId: 'test-group' });
+
+      await sleep(1000);
+
+      expect(startConsumersSpy).toHaveBeenCalledTimes(1);
+      expect(failHandleMessageSpy).toHaveBeenCalled();
     });
   });
 
